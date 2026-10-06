@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Share anonymous beta feedback with Read and Feel.">
+  <title>Beta feedback · Read and Feel</title>
+  <style>
+    :root { font-family: Arial, "Malgun Gothic", sans-serif; color: #242321; background: #fbfaf7; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 32px 16px; }
+    main { max-width: 650px; margin: 5vh auto; padding: 32px; background: #fff; border: 1px solid #e9e6df; }
+    a { color: #9f4f38; }
+    h1 { letter-spacing: -.05em; }
+    p { color: #69675f; line-height: 1.7; }
+    label { display: block; margin: 20px 0 8px; font-weight: 600; }
+    textarea { width: 100%; min-height: 180px; padding: 13px; border: 1px solid #d8d4cb; border-radius: 6px; font: inherit; line-height: 1.6; }
+    button { margin-top: 14px; padding: 12px 18px; border: 0; border-radius: 6px; background: #242321; color: white; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+    .trap { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+    #status { min-height: 24px; }
+  </style>
+</head>
+<body>
+  <main>
+    <a href="/">← Read and Feel</a>
+    <h1>Help us improve the daily reading ritual.</h1>
+    <p>Share anonymous feedback about usability, accessibility, or what you would like to see next. Do not include your name, contact details, sensitive information, or copyrighted passage text.</p>
+    <form id="feedbackForm">
+      <label for="message">Your feedback / 의견</label>
+      <textarea id="message" name="message" maxlength="2000" required minlength="8" placeholder="What worked well? What should we improve?"></textarea>
+      <label class="trap" aria-hidden="true">Leave this field blank<input id="website" tabindex="-1" autocomplete="off"></label>
+      <label><input id="consent" type="checkbox" required> I agree that this anonymous feedback may be stored for product improvement for up to 90 days. / 익명 의견이 제품 개선을 위해 최대 90일 보관되는 데 동의합니다.</label>
+      <button type="submit">Send feedback</button>
+      <p id="status" role="status" aria-live="polite"></p>
+    </form>
+    <p>We do not ask for your email or create an account. Feedback is stored in the service database and automatically removed during cleanup after 90 days. <a href="privacy.html">Privacy details</a>.</p>
+  </main>
+  <script>
+    const form = document.getElementById("feedbackForm");
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      const button = form.querySelector("button");
+      const status = document.getElementById("status");
+      button.disabled = true;
+      status.textContent = "Sending…";
+      try {
+        const response = await fetch("/api/beta-feedback", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({message: document.getElementById("message").value, consent: document.getElementById("consent").checked, website: document.getElementById("website").value})
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Feedback could not be sent.");
+        form.reset();
+        status.textContent = "Thank you. Your feedback was submitted anonymously.";
+      } catch {
+        status.textContent = "Feedback is not available yet. Please try again later.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
