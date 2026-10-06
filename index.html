@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fbfaf7">
+  <meta name="description" content="Read and Feel — 세계문학 한 문장을 매일 읽고 필사하는 문학 일력">
+  <link rel="icon" type="image/png" href="read-and-feel-logo.png">
+  <title>Read and Feel</title>
+  <style>
+    :root {
+      --paper: #fbfaf7;
+      --card: #ffffff;
+      --ink: #242321;
+      --muted: #8a8881;
+      --line: #e9e6df;
+      --soft: #f4f2ed;
+      --accent: #c86d50;
+      --accent-dark: #9f4f38;
+      --shadow: 0 18px 50px rgba(36, 35, 33, .07);
+      font-family: "Noto Serif KR", "Apple SD Gothic Neo", "Malgun Gothic", serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); }
+    button, textarea { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    .app { min-height: 100vh; padding: 28px 28px 44px; }
+    .topbar, .shell { max-width: 1180px; margin: 0 auto; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--line); border-radius: 13px; background: var(--card); box-shadow: 0 7px 16px rgba(36, 35, 33, .12); }
+    .brand-mark img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .brand-title { margin: 0; font-size: 16px; letter-spacing: -.04em; }
+    .brand-sub { margin: 3px 0 0; color: var(--muted); font: 11px/1.2 Arial, sans-serif; letter-spacing: .05em; }
+    .top-actions { display: flex; gap: 9px; }
+    .icon-btn, .outline-btn { background: var(--card); border: 1px solid var(--line); color: var(--ink); border-radius: 10px; transition: .2s; }
+    .icon-btn { width: 40px; height: 40px; font-size: 17px; }
+    .outline-btn { padding: 10px 15px; font-size: 13px; }
+    button:hover { transform: translateY(-1px); border-color: #d4cfc5; }
+    .shell { position: relative; display: grid; grid-template-columns: 1.08fr .92fr; gap: 22px; margin-top: 42px; }
+    .trial-notice { max-width: 1180px; margin: 18px auto -24px; color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .demo-lock { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 24px; background: rgba(251,250,247,.96); }
+    .demo-lock[hidden] { display: none; }
+    .demo-lock-card { width: min(100%, 510px); padding: 30px; border: 1px solid var(--line); background: var(--card); box-shadow: var(--shadow); text-align: center; }
+    .demo-lock-card h2 { margin: 10px 0; font-size: 24px; letter-spacing: -.05em; }
+    .demo-lock-card p { color: var(--muted); font-size: 13px; line-height: 1.8; }
+    .eyebrow { color: var(--accent); font: 11px Arial, sans-serif; letter-spacing: .18em; text-transform: uppercase; }
+    h1 { margin: 12px 0 10px; font-size: clamp(30px, 4vw, 48px); line-height: 1.15; letter-spacing: -.08em; font-weight: 500; }
+    .intro { max-width: 430px; margin: 0; color: var(--muted); font-size: 15px; line-height: 1.8; word-break: keep-all; }
+    .date-nav { display: flex; align-items: center; gap: 14px; margin-top: 27px; }
+    .date-nav strong { min-width: 120px; font-size: 15px; letter-spacing: -.03em; }
+    .date-nav button { width: 30px; height: 30px; border-radius: 50%; background: transparent; color: var(--muted); font-size: 20px; }
+    .progress-wrap { margin-top: 28px; width: min(100%, 450px); }
+    .progress-head { display: flex; justify-content: space-between; color: var(--muted); font: 11px Arial, sans-serif; }
+    .progress { height: 5px; margin-top: 8px; overflow: hidden; border-radius: 10px; background: #e8e5de; }
+    .progress i { display: block; width: 0%; height: 100%; border-radius: inherit; background: var(--accent); transition: width .25s; }
+    .quote-card { position: relative; margin-top: 36px; padding: 34px 36px 30px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); }
+    .quote-mark { position: absolute; top: 19px; right: 27px; color: #eeeae3; font-size: 70px; line-height: 1; }
+    .quote { position: relative; margin: 0; font-size: clamp(21px, 2.3vw, 29px); line-height: 1.8; letter-spacing: -.06em; word-break: keep-all; }
+    .original-quote { margin: 12px 0 0; color: var(--muted); font: 14px/1.75 Georgia, "Times New Roman", serif; }
+    .english-quote { margin: 8px 0 0; color: #6d6a63; font: 14px/1.75 Georgia, "Times New Roman", serif; }
+    .language-badge { display: inline-block; margin-bottom: 13px; padding: 5px 8px; border-radius: 5px; background: var(--soft); color: var(--accent-dark); font: 10px Arial, sans-serif; letter-spacing: .06em; }
+    .source { margin: 25px 0 0; color: var(--muted); font-size: 13px; }
+    .source b { color: var(--ink); font-weight: 500; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 23px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .saved-label { color: var(--muted); font-size: 12px; }
+    .save-btn { padding: 8px 12px; border-radius: 8px; background: var(--soft); color: var(--ink); font-size: 12px; }
+    .save-btn.active { background: #f8e7df; color: var(--accent-dark); }
+    .panel { padding: 25px; background: var(--card); border: 1px solid var(--line); }
+    .panel + .panel { margin-top: 14px; }
+    .panel-title { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 17px; font-size: 15px; letter-spacing: -.04em; }
+    .panel-title span { color: var(--muted); font: 10px Arial, sans-serif; letter-spacing: .12em; }
+    textarea { display: block; width: 100%; resize: vertical; min-height: 148px; padding: 15px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: #fdfcfb; color: var(--ink); font-size: 15px; line-height: 1.8; }
+    textarea:focus { border-color: #d6a391; box-shadow: 0 0 0 3px #fbeee9; }
+    .typing-input { min-height: 185px; }
+    .mode-row { display: flex; gap: 7px; margin: -5px 0 12px; }
+    .mode-btn { padding: 7px 10px; border: 1px solid var(--line); border-radius: 7px; background: white; color: var(--muted); font-size: 11px; }
+    .mode-btn.active { border-color: var(--accent); background: #fff7f3; color: var(--accent-dark); }
+    .timer { margin: 0 0 0 auto; color: var(--muted); font: 11px Arial, sans-serif; }
+    .typing-actions, .share-actions { display: flex; align-items: center; gap: 9px; margin-top: 12px; }
+    .primary-btn { padding: 11px 17px; border-radius: 8px; background: var(--ink); color: white; font-size: 12px; }
+    .secondary-btn { padding: 10px 13px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--ink); font-size: 12px; }
+    .hint { margin: 0 0 0 auto; color: var(--muted); font-size: 11px; }
+    .share-actions { margin-top: 0; }
+    .share-actions button { flex: 1; padding: 11px 8px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--ink); font-size: 12px; }
+    .share-actions button:first-child { background: var(--soft); }
+    .tool-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: -3px 0 12px; }
+    .tool-row label { color: var(--muted); font-size: 11px; }
+    .tool-row select, .tool-row input[type="range"] { height: 31px; border: 1px solid var(--line); border-radius: 7px; background: white; color: var(--ink); }
+    .tool-row select { padding: 0 6px; font-size: 11px; }
+    .tool-row input[type="range"] { width: 86px; accent-color: var(--accent); }
+    .tool-btn { padding: 7px 9px; border: 1px solid var(--line); border-radius: 7px; background: white; color: var(--ink); font-size: 11px; }
+    .tool-btn.active { border-color: var(--accent); background: #fff2ec; color: var(--accent-dark); }
+    .calendar-list { max-height: 360px; overflow: auto; margin-top: 17px; }
+    .calendar-item { padding: 13px 0; border-top: 1px solid var(--line); }
+    .calendar-item time { color: var(--accent); font: 10px Arial, sans-serif; }
+    .calendar-item p { margin: 5px 0 0; white-space: pre-wrap; font-size: 13px; line-height: 1.6; }
+    .empty-state { color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .alarm-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); font-size: 13px; }
+    .alarm-row input[type="time"] { padding: 8px; border: 1px solid var(--line); border-radius: 7px; }
+    .switch { position: relative; width: 42px; height: 23px; display: inline-block; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; border-radius: 20px; background: #ddd8d0; transition: .2s; }
+    .slider:before { content: ""; position: absolute; width: 17px; height: 17px; left: 3px; top: 3px; border-radius: 50%; background: white; transition: .2s; }
+    .switch input:checked + .slider { background: var(--accent); }
+    .switch input:checked + .slider:before { transform: translateX(19px); }
+    .toast { position: fixed; left: 50%; bottom: 28px; z-index: 5; padding: 12px 18px; border-radius: 30px; background: var(--ink); color: white; font: 12px Arial, sans-serif; opacity: 0; transform: translate(-50%, 15px); pointer-events: none; transition: .25s; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 4; display: none; place-items: center; padding: 20px; background: rgba(36,35,33,.22); }
+    .modal-backdrop.open { display: grid; }
+    .modal { width: min(100%, 390px); padding: 28px; background: var(--card); box-shadow: var(--shadow); }
+    .modal h2 { margin: 0 0 8px; font-size: 21px; letter-spacing: -.06em; }
+    .modal p { margin: 0 0 20px; color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .modal input { width: 100%; margin-bottom: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 7px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .subscription-modal { width: min(100%, 620px); }
+    .plans { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 18px 0; }
+    .plan { padding: 17px; border: 1px solid var(--line); border-radius: 9px; }
+    .plan.featured { border-color: #d6a391; background: #fff9f6; }
+    .plan h3 { margin: 0 0 7px; font-size: 15px; }
+    .plan strong { font-size: 20px; }
+    .plan p { margin: 10px 0 0; font-size: 12px; }
+    .subscribe-note { color: var(--muted); font-size: 11px; }
+    .global-modal { width: min(100%, 680px); max-height: min(90vh, 760px); overflow: auto; }
+    .settings-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 17px 0; }
+    .setting-card { padding: 13px; border: 1px solid var(--line); border-radius: 8px; }
+    .setting-card label, .setting-card strong { display: block; margin-bottom: 7px; font-size: 12px; }
+    .setting-card select, .setting-card input[type="email"] { width: 100%; padding: 9px; border: 1px solid var(--line); border-radius: 6px; background: white; }
+    .check-row { display: flex !important; align-items: center; gap: 8px; margin: 8px 0 0 !important; color: var(--muted); font-size: 11px !important; }
+    .check-row input { margin: 0; accent-color: var(--accent); }
+    .policy-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .policy-links button { padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: white; color: var(--ink); font-size: 11px; }
+    .status-note { margin: 0; padding: 10px; border-radius: 7px; background: var(--soft); color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .landing { max-width: 1180px; margin: 42px auto 0; padding: 38px; border: 1px solid var(--line); background: var(--card); }
+    .landing h1 { margin-top: 10px; }
+    .landing-copy { max-width: 670px; color: var(--muted); font-size: 15px; line-height: 1.9; }
+    .landing-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .section-block { max-width: 1180px; margin: 24px auto 0; padding: 28px; border: 1px solid var(--line); background: var(--card); }
+    .section-block h2 { margin: 0 0 12px; font-size: 21px; letter-spacing: -.05em; }
+    .feature-grid, .price-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .feature-item, .price-item { padding: 17px; border: 1px solid var(--line); border-radius: 8px; }
+    .feature-item strong, .price-item strong { display: block; margin-bottom: 7px; }
+    .feature-item p, .price-item p, .section-copy { color: var(--muted); font-size: 13px; line-height: 1.75; }
+    .site-footer { max-width: 1180px; margin: 24px auto 0; padding: 22px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.9; }
+    .site-footer a { margin-right: 13px; color: inherit; }
+    @media (max-width: 760px) {
+      .app { padding: 20px 16px 36px; }
+      .shell { display: block; margin-top: 35px; }
+      .right-column { margin-top: 25px; }
+      .quote-card { padding: 30px 23px 24px; }
+      .panel { padding: 21px 18px; }
+      .top-actions #giftBtn { display: none; }
+      .hint { display: none; }
+      .landing, .section-block { margin-top: 22px; padding: 23px 18px; }
+      .feature-grid, .price-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" role="img" aria-label="Read and Feel 세계문학일력 로고">
+          <img src="read-and-feel-logo.png" alt="Read and Feel 로고">
+        </div>
+        <div><p class="brand-title">Read and Feel</p><p class="brand-sub">ONE SENTENCE, EVERY DAY</p></div>
+      </div>
+      <div class="top-actions">
+        <button class="outline-btn" id="globalBtn">글로벌 설정</button>
+        <button class="outline-btn" id="monthBtn">월별 기록</button>
+        <button class="outline-btn" id="alarmBtn">알람 설정</button>
+        <button class="outline-btn" id="subscribeBtn">구독하기</button>
+        <button class="outline-btn" id="giftBtn">앱 선물하기</button>
+        <button class="icon-btn" id="themeBtn" aria-label="집중 모드">☼</button>
+      </div>
+    </header>
+
+    <section class="landing">
+      <div class="eyebrow">A daily moment with world literature</div>
+      <h1>Read a line.<br>Feel it stay.</h1>
+      <p class="landing-copy">Read and Feel is a quiet daily writing ritual: explore a short world-literature passage, copy it in its original language, English or Korean, and keep a note of what it means to you. Try the 7-day free interactive demo below; your practice and notes remain in this browser.</p>
+      <div class="landing-cta"><a class="primary-btn" href="#free-demo">7일 무료 데모 시작 · Start the 7-day free demo</a><a class="secondary-btn" href="#plans">구독 요금 보기 · Subscription plans</a></div>
+    </section>
+
+    <section class="section-block" aria-labelledby="aboutTitle">
+      <h2 id="aboutTitle">A small daily ritual for every reader</h2>
+      <div class="feature-grid">
+        <article class="feature-item"><strong>Read</strong><p>하루 한 문장으로 세계문학의 여러 언어와 목소리를 만납니다.</p></article>
+        <article class="feature-item"><strong>Write</strong><p>원문, 영어, 한국어 번역 중 원하는 문장을 직접 필사합니다.</p></article>
+        <article class="feature-item"><strong>Reflect</strong><p>메모와 월별 기록으로 나만의 문학 노트를 만들어 갑니다.</p></article>
+      </div>
+      <p class="section-copy">무료 데모는 첫 방문일부터 7일 동안 계정 없이 사용할 수 있습니다. 체험 기간과 입력·메모는 현재 브라우저에만 저장되며, 다른 브라우저 사용 또는 저장 데이터 삭제 시 체험을 다시 시작할 수 있습니다. 기기 간 동기화나 서버 백업은 제공하지 않습니다.</p>
+    </section>
+
+    <p class="trial-notice" id="trialNotice" aria-live="polite">무료 데모 · 첫 방문일부터 7일 동안 이용 가능</p>
+    <section class="shell" id="free-demo">
+      <div class="left-column">
+        <div class="eyebrow">Today's literature</div>
+        <h1>오늘의 문장을<br>천천히 만나요.</h1>
+        <p class="intro">한 문장을 읽고, 손끝으로 옮겨 적고,<br>마음에 오래 남겨 보세요.</p>
+        <div class="date-nav">
+          <button id="prevDay" aria-label="이전 날짜">‹</button>
+          <strong id="dateLabel">오늘</strong>
+          <button id="nextDay" aria-label="다음 날짜">›</button>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-head"><span>오늘의 필사</span><span id="progressText">0%</span></div>
+          <div class="progress"><i id="progressBar"></i></div>
+        </div>
+        <article class="quote-card" id="quoteCard">
+          <span class="quote-mark">“</span>
+          <span class="language-badge" id="languageLabel">영국 · English</span>
+          <p class="quote" id="quoteText">사랑은 우리가 발견하는 것이 아니라, 우리가 만들어 가는 것이다.</p>
+          <p class="original-quote" id="originalText">We do not discover love; we create it.</p>
+          <p class="english-quote" id="englishText">English · We do not discover love; we create it.</p>
+          <p class="source"><b id="authorText">어니스트 헤밍웨이</b> · <span id="bookText">세계문학의 문장들</span></p>
+          <div class="card-footer">
+            <span class="saved-label" id="dayNumber">DAY 001 · 목요일</span>
+            <button class="save-btn" id="saveBtn">♡ 문장 저장</button>
+          </div>
+        </article>
+      </div>
+
+      <div class="right-column">
+        <section class="panel">
+          <h2 class="panel-title">문장 필사 <span>TYPE OR WRITE</span></h2>
+          <div class="mode-row"><button class="mode-btn active" data-mode="original">원문 필사</button><button class="mode-btn" data-mode="english">영어 필사</button><button class="mode-btn" data-mode="translation">번역 필사</button></div>
+          <div class="tool-row" aria-label="필사 입력 꾸미기">
+            <label for="textColor">색</label><select id="textColor" aria-label="문자 색깔"><option value="#242321">검정</option><option value="#9f4f38">갈색</option><option value="#3f6280">파랑</option><option value="#5f7c59">초록</option></select>
+            <label for="fontFamily">폰트</label><select id="fontFamily" aria-label="폰트"><option value='"Noto Serif KR", serif'>고딕</option><option value='Georgia, serif'>명조</option><option value='"Malgun Gothic", sans-serif'>산세리프</option>
+            </select>
+            <label for="fontSize">크기</label><input id="fontSize" type="range" min="13" max="25" value="15" aria-label="폰트 크기"><button class="tool-btn" id="highlightBtn" type="button">형광펜</button><button class="tool-btn" id="hapticBtn" type="button">진동</button>
+          </div>
+          <textarea class="typing-input" id="typingInput" lang="en" placeholder="원문을 천천히 입력해 보세요." spellcheck="false"></textarea>
+          <div class="typing-actions">
+            <button class="primary-btn" id="completeBtn">필사 완료</button>
+            <button class="secondary-btn" id="clearBtn">지우기</button>
+            <p class="hint"><span id="charCount">0</span> / <span id="totalChars">0</span>자</p>
+          </div>
+        </section>
+        <section class="panel">
+          <h2 class="panel-title">오늘의 메모 <span>MY NOTE</span></h2>
+          <textarea id="memoInput" placeholder="이 문장이 내게 건넨 생각을 적어보세요."></textarea>
+        </section>
+        <section class="panel">
+          <h2 class="panel-title">간직하고 나누기 <span>SAVE & SHARE</span></h2>
+          <div class="share-actions">
+            <button id="captureBtn">▣ 캡처 저장</button>
+            <button id="shareBtn">↗ 공유하기</button>
+          </div>
+        </section>
+      </div>
+      <div class="demo-lock" id="demoLock" hidden role="status" aria-live="polite">
+        <div class="demo-lock-card">
+          <span class="eyebrow">7-DAY FREE DEMO</span>
+          <h2>7일 무료 데모가 끝났어요.</h2>
+          <p>체험 기록은 이 브라우저에 보관되어 있습니다. 구독 요금과 출시 상태를 확인해 주세요.</p>
+          <p>현재 구독 결제는 아직 준비 중이므로, 유료 구독을 시작할 수 없습니다.</p>
+          <a class="primary-btn" href="#plans">구독 요금 및 출시 상태 보기</a>
+        </div>
+      </div>
+    </section>
+        <section class="section-block" id="plans">
+          <h2>구독 요금 · Subscription</h2>
+          <p class="section-copy">구독은 유료 기능이 열릴 때 선택할 수 있습니다. 결제 제공자 심사 및 라이브 결제 설정이 완료되기 전에는 실제 결제가 이루어지지 않습니다.</p>
+          <div class="price-grid">
+            <article class="price-item"><strong>월간 · Monthly</strong><span>₩3,900 / 월</span><p>매일 문장과 필사 도구에 대한 구독 가격 제안</p></article>
+            <article class="price-item"><strong>연간 · Yearly</strong><span>₩40,000 / 년</span><p>매일 문장과 필사 도구에 대한 구독 가격 제안</p></article>
+            <article class="price-item"><strong>무료 데모 · Free demo</strong><span>7일 · 7 days</span><p>첫 방문일부터 7일간 이용 가능 · Available for 7 days from first visit</p></article>
+          </div>
+        </section>
+        <section class="section-block">
+          <h2>베타 피드백 · Beta feedback</h2>
+          <p class="section-copy">초기 사용 경험을 개선하고 있습니다. 개인정보나 문장 전문을 적지 말고 사용성 의견만 보내 주세요.</p>
+          <a class="secondary-btn" href="beta-feedback.html">익명 피드백 보내기 · Send anonymous feedback</a>
+        </section>
+        <footer class="site-footer">
+          <a href="terms.html">이용약관 / Terms</a><a href="privacy.html">개인정보처리방침 / Privacy</a><a href="refunds.html">환불·구독 해지 / Refunds</a><a href="support.html">고객지원 / Support</a>
+          <a href="https://www.instagram.com/readandfeel2026/" target="_blank" rel="noopener noreferrer">Instagram · @readandfeel2026</a>
+          <p>Read and Feel · 초기 베타. 결제 기능은 결제대행사 심사와 라이브 설정 완료 후 제공됩니다.</p>
+          <p>운영자 및 연락처 정보는 <a href="terms.html">이용약관</a>과 <a href="privacy.html">개인정보처리방침</a>에서 확인할 수 있습니다.</p>
+        </footer>
+  </main>
+  <div class="toast" id="toast"></div>
+  <div class="modal-backdrop" id="giftModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="giftTitle">
+      <h2 id="giftTitle">문학을 선물하세요</h2>
+      <p>소중한 사람에게 2026 세계문학일력을 선물할 수 있어요. 받는 분의 이름과 이메일을 남겨 주세요.</p>
+      <input id="giftName" placeholder="받는 분 이름">
+      <input id="giftEmail" type="email" placeholder="받는 분 이메일">
+      <div class="modal-actions"><button class="secondary-btn" id="closeGift">닫기</button><button class="primary-btn" id="sendGift">선물 보내기</button></div>
+    </div>
+    <div class="modal-backdrop" id="subscriptionModal">
+      <div class="modal subscription-modal" role="dialog" aria-modal="true" aria-labelledby="subscriptionTitle">
+        <h2 id="subscriptionTitle">Read and Feel 구독</h2>
+        <p>매일 새로운 세계문학 문장과 원문 필사 콘텐츠를 받아보세요.</p>
+        <div class="plans">
+          <div class="plan"><h3>월간 멤버십</h3><strong>₩3,900 / 월</strong><p>매일 문장 · 원문/번역 필사 · 저장/공유</p><button class="primary-btn plan-btn" data-plan="monthly" type="button">월간 구독 시작</button></div>
+          <div class="plan featured"><h3>연간 멤버십</h3><strong>₩40,000 / 년</strong><p>매일 문장 · 원문/번역 필사 · 저장/공유</p><button class="primary-btn plan-btn" data-plan="annual" type="button">연간 구독 시작</button></div>
+        </div>
+        <div class="modal-backdrop" id="globalModal">
+          <div class="modal global-modal" role="dialog" aria-modal="true" aria-labelledby="globalTitle">
+            <h2 id="globalTitle">Global service settings</h2>
+            <p>서비스 언어와 결제 환경을 설정하세요. 결제·세금·이메일은 안전한 외부 서비스 연결 후 실제 처리됩니다.</p>
+            <div class="settings-grid">
+              <div class="setting-card"><label for="uiLanguage">언어 / Language</label><select id="uiLanguage"><option value="ko">한국어</option><option value="en">English</option><option value="fr">Français</option><option value="ja">日本語</option></select></div>
+              <div class="setting-card"><label for="currency">통화 / Currency</label><select id="currency"><option value="KRW">KRW ₩</option><option value="USD">USD $</option><option value="EUR">EUR €</option><option value="JPY">JPY ¥</option><option value="GBP">GBP £</option></select></div>
+              <div class="setting-card"><strong>구독 갱신</strong><span id="utcRenewal">UTC 기준 다음 갱신일을 계산합니다.</span></div>
+              <div class="setting-card"><strong>결제 수단</strong><label class="check-row"><input id="applePay" type="checkbox"> Apple Pay</label><label class="check-row"><input id="googlePay" type="checkbox"> Google Pay</label><label class="check-row"><input id="cardPay" type="checkbox" checked> 카드 결제</label></div>
+              <div class="setting-card"><strong>영수증 및 세금 문서</strong><label class="check-row"><input id="emailReceipt" type="checkbox" checked> 이메일 영수증 받기</label><label class="check-row"><input id="taxReceipt" type="checkbox"> 국가별 세금계산서/영수증 요청</label><input id="receiptEmail" type="email" placeholder="영수증 이메일"></div>
+              <div class="setting-card"><strong>고객 지원</strong><p class="subscribe-note">고객·개인정보 문의: yaa9432@gmail.com</p><button class="secondary-btn" id="supportBtn" type="button">지원 이메일 보내기</button></div>
+            </div>
+            <p class="status-note">결제 정보는 Read and Feel에 저장하지 않습니다. Apple Pay, Google Pay, 세금 계산, 이메일 영수증, 고객 포털은 Stripe 등 결제대행사와 서버 웹훅 연결 후 활성화됩니다.</p>
+            <div class="policy-links"><button type="button" data-policy="terms">이용약관</button><button type="button" data-policy="privacy">개인정보처리방침</button><button type="button" data-policy="refund">해지·환불 정책</button><button type="button" id="portalBtn">고객 포털 열기</button></div>
+            <label class="check-row"><input id="gdprConsent" type="checkbox"> GDPR 및 개인정보 처리에 동의합니다.</label>
+            <label class="check-row"><input id="analyticsConsent" type="checkbox"> 쿠키 및 분석 도구 사용에 동의합니다.</label>
+            <div class="modal-actions"><button class="secondary-btn" id="closeGlobal">닫기</button><button class="primary-btn" id="saveGlobal">설정 저장</button></div>
+          </div>
+        </div>
+        <div class="modal-backdrop" id="policyModal">
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+            <h2 id="policyTitle">정책 안내</h2>
+            <p id="policyBody"></p>
+            <div class="modal-actions"><button class="secondary-btn" id="closePolicy">닫기</button></div>
+          </div>
+        </div>
+        <div class="modal-backdrop" id="monthModal">
+          <div class="modal subscription-modal" role="dialog" aria-modal="true" aria-labelledby="monthTitle">
+            <h2 id="monthTitle">월별 필사 기록</h2>
+            <p id="monthSummary"></p>
+            <div class="calendar-list" id="calendarList"></div>
+            <div class="modal-actions"><button class="secondary-btn" id="closeMonth">닫기</button></div>
+          </div>
+        </div>
+        <div class="modal-backdrop" id="alarmModal">
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="alarmTitle">
+            <h2 id="alarmTitle">매일 필사 알람</h2>
+            <p>설정한 시간에 오늘의 문장을 시작하도록 알려드려요. 브라우저 알림 권한이 필요합니다.</p>
+            <div class="alarm-row"><span>매일 알람</span><label class="switch"><input id="alarmEnabled" type="checkbox"><i class="slider"></i></label></div>
+            <div class="alarm-row"><label for="alarmTime">알람 시간</label><input id="alarmTime" type="time" value="08:00"></div>
+            <div class="modal-actions"><button class="secondary-btn" id="closeAlarm">닫기</button><button class="primary-btn" id="saveAlarm">알람 저장</button></div>
+          </div>
+        </div>
+        <p class="subscribe-note">실제 결제 없이 구독 선택 화면을 체험할 수 있습니다.</p>
+        <div class="modal-actions"><button class="secondary-btn" id="closeSubscription">닫기</button></div>
+        <p class="subscribe-note">결제는 Lemon Squeezy의 보안 Checkout에서 처리됩니다. 카드 정보는 이 앱에 저장되지 않습니다.</p>
+      </div>
+    </div>
+  </div>
+  <script>
+    const entries = [
+      {language: "영국 · English", lang: "en", original: "I declare after all there is no enjoyment like reading!", english: "I declare after all there is no enjoyment like reading!", translation: "아무래도 독서만큼 즐거운 것은 없다고 생각해요!", author: "제인 오스틴", book: "오만과 편견, 11장", weekday: true},
+      {language: "미국 · English", lang: "en", original: "I am not afraid of storms, for I am learning how to sail my ship.", english: "I am not afraid of storms, for I am learning how to sail my ship.", translation: "폭풍이 두렵지 않아. 내 배를 모는 법을 배우고 있으니까.", author: "루이자 메이 올컷", book: "작은 아씨들", weekday: true},
+      {language: "영국 · English", lang: "en", original: "Shall I compare thee to a summer's day?", english: "Shall I compare thee to a summer's day?", translation: "그대를 여름날에 견주어 볼까요?", author: "윌리엄 셰익스피어", book: "소네트 18번", weekday: true},
+      {language: "프랑스 · Français", lang: "fr", original: "Il faut cultiver notre jardin.", english: "We must cultivate our garden.", translation: "우리는 우리 정원을 가꾸어야 한다.", author: "볼테르", book: "캉디드, 마지막 장", weekday: true},
+      {language: "스페인 · Español", lang: "es", original: "En un lugar de la Mancha, de cuyo nombre no quiero acordarme…", english: "Somewhere in La Mancha, in a place whose name I do not care to remember…", translation: "라만차의 어느 곳, 그 이름을 굳이 기억하고 싶지 않은 곳에…", author: "미겔 데 세르반테스", book: "돈키호테, 1부 1장", weekday: true},
+      {language: "프랑스 · Français", lang: "fr", original: "Cela est bien dit, répondit Candide, mais il faut cultiver notre jardin.", english: "That is well said, replied Candide, but we must cultivate our garden.", translation: "좋은 말이오, 캉디드가 답했다. 하지만 우리는 우리 정원을 가꾸어야 하오.", author: "볼테르", book: "캉디드, 마지막 장", weekday: false},
+      {language: "일본 · 日本語", lang: "ja", original: "吾輩は猫である。名前はまだ無い。", english: "I am a cat. I have no name yet.", translation: "나는 고양이다. 이름은 아직 없다.", author: "나쓰메 소세키", book: "나는 고양이로소이다, 1장", weekday: false}
+    ];
+    const $ = id => document.getElementById(id);
+    ["giftModal", "subscriptionModal", "monthModal", "alarmModal", "globalModal", "policyModal"].forEach(id => document.body.appendChild($(id)));
+    const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+    const TRIAL_STARTED_KEY = "read-and-feel-trial-started-at";
+    const storedTrialStart = localStorage.getItem(TRIAL_STARTED_KEY);
+    const trialStartedAt = storedTrialStart === null
+      ? Date.now()
+      : Number.isFinite(Number(storedTrialStart)) && Number(storedTrialStart) > 0
+        ? Number(storedTrialStart)
+        : 0;
+    if (storedTrialStart === null) localStorage.setItem(TRIAL_STARTED_KEY, String(trialStartedAt));
+    let day = 0, saved = false, mode = "original";
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    function currentDate() { const d = new Date(start); d.setDate(start.getDate() + day); return d; }
+    function currentEntry() {
+      const weekday = currentDate().getDay();
+      if (weekday === 0) return entries[6];
+      if (weekday === 6) return entries[5];
+      return entries[weekday - 1];
+    }
+    function dateKey(date = currentDate()) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+    function trialExpired() { return !trialStartedAt || Date.now() >= trialStartedAt + TRIAL_DURATION_MS; }
+    function requireTrialAccess() {
+      if (!trialExpired()) return true;
+      updateTrialStatus();
+      showToast("7일 무료 데모가 종료되었어요.");
+      return false;
+    }
+    function updateTrialStatus() {
+      const expired = trialExpired();
+      $("demoLock").hidden = !expired;
+      document.querySelectorAll(".left-column, .right-column").forEach(column => {
+        column.inert = expired;
+        column.setAttribute("aria-hidden", String(expired));
+      });
+      $("trialNotice").textContent = expired
+        ? "무료 데모 체험 기간이 종료되었습니다. 구독 결제는 아직 준비 중입니다."
+        : `무료 데모 · 첫 방문일부터 7일간 이용 가능 · 남은 기간 ${Math.ceil((trialStartedAt + TRIAL_DURATION_MS - Date.now()) / 86400000)}일`;
+    }
+    function savedTyping() { return localStorage.getItem(`typing-${dateKey()}-${mode}`) || ""; }
+    function vibrate(pattern = 18) {
+      if (typeof navigator.vibrate === "function") navigator.vibrate(pattern);
+    }
+    function applyTypingStyle() {
+      const input = $("typingInput");
+      input.style.color = $("textColor").value;
+      input.style.fontFamily = $("fontFamily").value;
+      input.style.fontSize = `${$("fontSize").value}px`;
+      input.style.background = $("highlightBtn").classList.contains("active") ? "#fff7b8" : "#fdfcfb";
+    }
+    function showToast(message) { const toast = $("toast"); toast.textContent = message; toast.classList.add("show"); clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove("show"), 2200); }
+    function render() {
+      const d = currentDate(), item = currentEntry();
+      $("dateLabel").textContent = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+      $("dayNumber").textContent = `DAY ${String(day + 1).padStart(3, "0")} · ${["일", "월", "화", "수", "목", "금", "토"][d.getDay()]}요일`;
+      $("languageLabel").textContent = item.language; $("quoteText").textContent = item.translation; $("originalText").textContent = item.original; $("englishText").textContent = `English · ${item.english}`;
+      $("authorText").textContent = item.author; $("bookText").textContent = item.book;
+      $("totalChars").textContent = item[mode].length; $("typingInput").value = savedTyping(); $("charCount").textContent = $("typingInput").value.length;
+      $("progressBar").style.width = "0%"; $("progressText").textContent = "0%"; saved = false;
+      $("saveBtn").classList.remove("active"); $("saveBtn").textContent = "♡ 문장 저장";
+      $("memoInput").value = localStorage.getItem(`memo-${dateKey()}`) || localStorage.getItem(`memo-${day}`) || "";
+      $("typingInput").lang = mode === "original" ? item.lang : mode === "english" ? "en" : "ko";
+      $("typingInput").spellcheck = false;
+      $("typingInput").placeholder = mode === "original" ? `${item.language.split(" · ")[1]} 원문을 입력해 보세요.` : mode === "english" ? "English 문장을 입력해 보세요." : "번역 문장을 천천히 입력해 보세요.";
+      const percent = Math.min(100, Math.round($("typingInput").value.length / item[mode].length * 100));
+      $("progressBar").style.width = `${percent}%`; $("progressText").textContent = `${percent}%`; applyTypingStyle();
+    }
+    $("typingInput").addEventListener("input", e => {
+      if (!requireTrialAccess()) return;
+      const value = e.target.value, total = currentEntry()[mode].length;
+      const percent = Math.min(100, Math.round(value.length / total * 100));
+      $("charCount").textContent = value.length; $("progressText").textContent = `${percent}%`; $("progressBar").style.width = `${percent}%`;
+      localStorage.setItem(`typing-${dateKey()}-${mode}`, value);
+    });
+    $("completeBtn").addEventListener("click", () => { if (!requireTrialAccess()) return; if (!$("typingInput").value.length) return showToast("문장을 먼저 입력해 주세요."); vibrate([18, 35, 18]); showToast("오늘의 필사를 기록했어요."); });
+    $("clearBtn").addEventListener("click", () => { if (!requireTrialAccess()) return; $("typingInput").value = ""; $("typingInput").dispatchEvent(new Event("input")); vibrate(); });
+    $("saveBtn").addEventListener("click", () => { if (!requireTrialAccess()) return; saved = !saved; $("saveBtn").classList.toggle("active", saved); $("saveBtn").textContent = saved ? "♥ 저장됨" : "♡ 문장 저장"; showToast(saved ? "문장을 저장했어요." : "저장을 취소했어요."); });
+    $("memoInput").addEventListener("input", e => { if (requireTrialAccess()) localStorage.setItem(`memo-${dateKey()}`, e.target.value); });
+    ["textColor", "fontFamily", "fontSize"].forEach(id => $(id).addEventListener("input", () => { if (requireTrialAccess()) applyTypingStyle(); }));
+    $("highlightBtn").addEventListener("click", () => { if (!requireTrialAccess()) return; $("highlightBtn").classList.toggle("active"); applyTypingStyle(); vibrate(); });
+    $("hapticBtn").addEventListener("click", () => { if (!requireTrialAccess()) return; vibrate([18, 35, 18]); showToast(typeof navigator.vibrate === "function" ? "햅틱 피드백을 확인했어요." : "이 브라우저에서는 진동을 지원하지 않아요."); });
+    $("prevDay").addEventListener("click", () => { if (!requireTrialAccess()) return; if (day > 0) { day--; render(); } });
+    $("nextDay").addEventListener("click", () => { if (!requireTrialAccess()) return; day++; render(); });
+    document.querySelectorAll(".mode-btn").forEach(button => button.addEventListener("click", () => {
+      if (!requireTrialAccess()) return;
+      mode = button.dataset.mode; document.querySelectorAll(".mode-btn").forEach(item => item.classList.toggle("active", item === button)); render();
+    }));
+    $("shareBtn").addEventListener("click", async () => {
+      if (!requireTrialAccess()) return;
+      const text = `“${$("quoteText").textContent}” — ${$("authorText").textContent}`;
+      if (navigator.share) { try { await navigator.share({ title: "2026 세계문학일력", text }); } catch (e) { if (e.name !== "AbortError") showToast("공유할 수 없어요."); } }
+      else { await navigator.clipboard.writeText(text); showToast("문장을 클립보드에 복사했어요."); }
+    });
+    $("captureBtn").addEventListener("click", () => {
+      if (!requireTrialAccess()) return;
+      const card = $("quoteCard"), canvas = document.createElement("canvas"), scale = 2, rect = card.getBoundingClientRect();
+      canvas.width = rect.width * scale; canvas.height = rect.height * scale; const ctx = canvas.getContext("2d"); ctx.scale(scale, scale);
+      ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, rect.width, rect.height); ctx.fillStyle = "#242321"; ctx.font = "600 24px serif";
+      const text = $("quoteText").textContent; const words = text.split(""); let line = "", y = 88; words.forEach(char => { if (ctx.measureText(line + char).width > rect.width - 70) { ctx.fillText(line, 35, y); line = char; y += 43; } else line += char; }); ctx.fillText(line, 35, y);
+      ctx.fillStyle = "#8a8881"; ctx.font = "13px sans-serif"; ctx.fillText(`${$("authorText").textContent} · ${$("bookText").textContent}`, 35, y + 45); ctx.fillText("2026 세계문학일력", 35, rect.height - 25);
+      const link = document.createElement("a"); link.download = "world-literature-calendar.png"; link.href = canvas.toDataURL("image/png"); link.click(); showToast("문장 카드를 저장했어요.");
+    });
+    $("giftBtn").addEventListener("click", () => $("giftModal").classList.add("open"));
+    $("closeGift").addEventListener("click", () => $("giftModal").classList.remove("open"));
+    $("sendGift").addEventListener("click", () => { if (!$("giftName").value || !$("giftEmail").value) return showToast("이름과 이메일을 입력해 주세요."); $("giftModal").classList.remove("open"); showToast("문학 선물 카드를 준비했어요."); });
+    $("subscribeBtn").addEventListener("click", () => $("subscriptionModal").classList.add("open"));
+    $("closeSubscription").addEventListener("click", () => $("subscriptionModal").classList.remove("open"));
+    async function startCheckout(plan, button) {
+      const currency = $("currency")?.value || "KRW";
+      button.disabled = true;
+      try {
+        const response = await fetch("/api/create-checkout", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({plan, currency, locale: $("uiLanguage")?.value || navigator.language})});
+        const result = await response.json();
+        if (!response.ok || !result.checkoutUrl) throw new Error(result.error || "Checkout unavailable");
+        window.location.href = result.checkoutUrl;
+      } catch (error) {
+        showToast("결제 페이지를 준비하지 못했어요. 잠시 후 다시 시도해 주세요.");
+        button.disabled = false;
+      }
+    }
+    document.querySelectorAll(".plan-btn").forEach(button => button.addEventListener("click", () => startCheckout(button.dataset.plan, button)));
+    $("themeBtn").addEventListener("click", () => { document.body.classList.toggle("focus-mode"); $("themeBtn").textContent = document.body.classList.contains("focus-mode") ? "☾" : "☼"; showToast("집중 모드를 전환했어요."); });
+    function renderMonth() {
+      const selected = currentDate(), year = selected.getFullYear(), month = selected.getMonth();
+      const monthName = `${year}년 ${month + 1}월`;
+      $("monthTitle").textContent = `${monthName} 필사 기록`;
+      const records = [];
+      const lastDay = new Date(year, month + 1, 0).getDate();
+      for (let number = 1; number <= lastDay; number++) {
+        const date = new Date(year, month, number), key = dateKey(date);
+        const typing = [localStorage.getItem(`typing-${key}-original`), localStorage.getItem(`typing-${key}-translation`)].filter(Boolean).join(" / "), memo = localStorage.getItem(`memo-${key}`) || "";
+        if (typing || memo) records.push({ date, typing, memo });
+      }
+      $("monthSummary").textContent = `${monthName}에 ${records.length}일의 기록이 있습니다.`;
+      $("calendarList").innerHTML = records.length ? records.map(record => `<article class="calendar-item"><time>${record.date.getMonth() + 1}월 ${record.date.getDate()}일</time><p>${record.typing || record.memo}</p></article>`).join("") : '<p class="empty-state">아직 이 달의 기록이 없어요.<br>문장을 필사하거나 메모를 남겨 보세요.</p>';
+    }
+    $("monthBtn").addEventListener("click", () => { renderMonth(); $("monthModal").classList.add("open"); });
+    $("closeMonth").addEventListener("click", () => $("monthModal").classList.remove("open"));
+    function loadAlarm() {
+      const alarm = JSON.parse(localStorage.getItem("daily-alarm") || '{"enabled":false,"time":"08:00"}');
+      $("alarmEnabled").checked = alarm.enabled; $("alarmTime").value = alarm.time;
+    }
+    $("alarmBtn").addEventListener("click", () => { loadAlarm(); $("alarmModal").classList.add("open"); });
+    $("closeAlarm").addEventListener("click", () => $("alarmModal").classList.remove("open"));
+    $("saveAlarm").addEventListener("click", async () => {
+      const enabled = $("alarmEnabled").checked, time = $("alarmTime").value;
+      if (enabled && "Notification" in window && Notification.permission === "default") await Notification.requestPermission();
+      localStorage.setItem("daily-alarm", JSON.stringify({enabled, time})); $("alarmModal").classList.remove("open"); showToast(enabled ? `${time} 매일 알람을 저장했어요.` : "매일 알람을 껐어요.");
+    });
+    const currencySymbols = {KRW: "₩", USD: "$", EUR: "€", JPY: "¥", GBP: "£"};
+    function updateCurrency() {
+      const currency = $("currency").value, symbol = currencySymbols[currency], rates = {KRW: 1, USD: 0.00075, EUR: 0.00069, JPY: 0.11, GBP: 0.00059};
+      const monthly = Math.round(3900 * rates[currency]), annual = Math.round(40000 * rates[currency]);
+      document.querySelector(".plan strong").textContent = `${symbol}${monthly.toLocaleString()} / ${currency === "KRW" ? "월" : "month"}`;
+      document.querySelector(".plan.featured strong").textContent = `${symbol}${annual.toLocaleString()} / ${currency === "KRW" ? "년" : "year"}`;
+    }
+    function loadGlobalSettings() {
+      const settings = JSON.parse(localStorage.getItem("global-settings") || "{}");
+      ["uiLanguage", "currency", "receiptEmail"].forEach(id => { if (settings[id] !== undefined) $(id).value = settings[id]; });
+      ["applePay", "googlePay", "cardPay", "emailReceipt", "taxReceipt", "gdprConsent", "analyticsConsent"].forEach(id => { if (settings[id] !== undefined) $(id).checked = settings[id]; });
+      const next = new Date(Date.now() + 30 * 86400000);
+      $("utcRenewal").textContent = `다음 갱신 예정: ${next.toISOString().replace("T", " ").slice(0, 16)} UTC`;
+      updateCurrency();
+    }
+    $("globalBtn").addEventListener("click", () => { loadGlobalSettings(); $("globalModal").classList.add("open"); });
+    $("closeGlobal").addEventListener("click", () => $("globalModal").classList.remove("open"));
+    $("currency").addEventListener("change", updateCurrency);
+    $("saveGlobal").addEventListener("click", () => {
+      const settings = {uiLanguage: $("uiLanguage").value, currency: $("currency").value, receiptEmail: $("receiptEmail").value};
+      ["applePay", "googlePay", "cardPay", "emailReceipt", "taxReceipt", "gdprConsent", "analyticsConsent"].forEach(id => settings[id] = $(id).checked);
+      localStorage.setItem("global-settings", JSON.stringify(settings)); $("globalModal").classList.remove("open"); showToast("글로벌 설정을 저장했어요.");
+    });
+    const policies = {
+      terms: "국가별 법률과 결제대행사 약관을 기준으로 제공되는 Read and Feel 이용약관입니다. 실제 서비스 출시 전 국가별 법률 검토가 필요합니다.",
+      privacy: "Read and Feel은 결제정보를 직접 저장하지 않으며, 결제대행사와 필요한 최소 정보만 처리합니다. GDPR 대상자는 열람·정정·삭제·이동·처리 제한을 요청할 수 있습니다.",
+      refund: "구독 해지와 환불은 고객 포털 또는 결제대행사 정책에 따라 처리됩니다. 실제 환불 규칙은 판매 국가와 상품 유형에 맞게 확정해야 합니다."
+    };
+    document.querySelectorAll("[data-policy]").forEach(button => button.addEventListener("click", () => { $("policyTitle").textContent = button.textContent; $("policyBody").textContent = policies[button.dataset.policy]; $("policyModal").classList.add("open"); }));
+    $("closePolicy").addEventListener("click", () => $("policyModal").classList.remove("open"));
+    $("portalBtn").addEventListener("click", () => showToast("결제대행사 고객 포털 연결이 필요해요."));
+    $("supportBtn").addEventListener("click", () => { window.location.href = "mailto:yaa9432@gmail.com?subject=Read%20and%20Feel%20Support"; });
+    setInterval(() => {
+      updateTrialStatus();
+      const alarm = JSON.parse(localStorage.getItem("daily-alarm") || '{"enabled":false}'), now = new Date(), current = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+      if (alarm.enabled && alarm.time === current && now.getSeconds() < 2 && "Notification" in window && Notification.permission === "granted") new Notification("Read and Feel", {body: "오늘의 문장을 만나볼 시간이에요."});
+    }, 1000);
+    updateTrialStatus();
+    render();
+  </script>
+</body>
+</html>
